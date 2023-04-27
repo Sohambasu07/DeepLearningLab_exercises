@@ -26,7 +26,7 @@ class CNN(nn.Module):
         self.block2_conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding='same')
         self.block2_bn2 = nn.BatchNorm2d(num_features=64)
         self.block2_act2 = nn.LeakyReLU(negative_slope=0.2)
-        self.block2_pool = nn.MaxPool2d(kernel_size=(2))
+        self.block2_pool = nn.AvgPool2d(kernel_size=(24)) #nn.MaxPool2d(kernel_size=(2))
 
         self.block3_conv1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding='same')
         self.block3_bn1 = nn.BatchNorm2d(num_features=128)
@@ -39,7 +39,7 @@ class CNN(nn.Module):
         self.conv_layers = [
             self.block1_conv1, self.block1_bn1, self.block1_act1, self.block1_conv2, self.block1_bn2, self.block1_act2, self.block1_pool,
             self.block2_conv1, self.block2_bn1, self.block2_act1, self.block2_conv2, self.block2_bn2, self.block2_act2, self.block2_pool,
-            self.block3_conv1, self.block3_bn1, self.block3_act1, self.block3_conv2, self.block3_bn2, self.block3_act2, self.block3_pool, 
+            # self.block3_conv1, self.block3_bn1, self.block3_act1, self.block3_conv2, self.block3_bn2, self.block3_act2, self.block3_pool, 
         ]
 
         # self.conv1 = nn.Conv2d(in_channels=history_length, out_channels=32, kernel_size=3, stride=1, padding='same')
@@ -52,7 +52,7 @@ class CNN(nn.Module):
         # self.pool2 = nn.AvgPool2d(kernel_size=(48))
 
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(512, 32)
+        self.fc1 = nn.Linear(256, 32)
         self.act_fc1 = nn.LeakyReLU(negative_slope=0.02)
         self.drop1 = nn.Dropout(0.1)
         self.fc2 = nn.Linear(32, 512)
@@ -72,9 +72,9 @@ class CNN(nn.Module):
         for layer in self.conv_layers:
             x = layer(x)
             count += 1
-            if count == 8 or count == 15:
+            if count == 8: # or count == 15:
                 inp = x
-            if count == 4 or count == 11 or count == 18:
+            if count == 4 or count == 11: # or count == 18:
             #    blocks.append(x)
             #    count = 0
                x = torch.add(x, inp)

@@ -175,5 +175,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=1000, n_minibatches=10, batch_size=128, lr=1e-4)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=1000, n_minibatches=10, batch_size=128, lr=1e-2)
  
