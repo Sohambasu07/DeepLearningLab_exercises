@@ -154,8 +154,8 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
                 "val_loss" : avg_val_loss,
                 "val_acc" : avg_val_acc
             }
-            # if i % 100 == 0:
-            tensorboard_eval.write_episode_data(epoch, eval_dict)               
+            if i % 100 == 0:
+                tensorboard_eval.write_episode_data(epoch, eval_dict)               
 
 
 
@@ -175,5 +175,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=10, n_minibatches=10, batch_size=64, lr=1e-4)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=1000, n_minibatches=10, batch_size=128, lr=1e-4)
  
