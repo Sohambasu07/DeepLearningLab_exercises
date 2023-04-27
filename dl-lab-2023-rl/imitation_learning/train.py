@@ -162,14 +162,16 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
                 best_val_acc = avg_val_acc
                 # agent.save(os.path.join(model_dir, "agent.pt"))
                 # print("Model saved in file: %s" % model_dir)
+        agent.save(os.path.join(model_dir, "agent.pt"))
+        print("Model saved in file: %s" % model_dir)
 
 
 
     # TODO: save your agent
     # model_dir = agent.save(os.path.join(model_dir, "agent.pt"))
     # print("Model saved in file: %s" % model_dir)
-    agent.save(os.path.join(model_dir, "agent.pt"))
-    print("Model saved in file: %s" % model_dir)
+    # agent.save(os.path.join(model_dir, "agent.pt"))
+    # print("Model saved in file: %s" % model_dir)
 
 if __name__ == "__main__":
 
