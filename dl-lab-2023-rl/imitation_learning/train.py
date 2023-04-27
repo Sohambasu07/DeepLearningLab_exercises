@@ -100,6 +100,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
     #         # compute training/ validation accuracy and write it to tensorboard
     #         tensorboard_eval.write_episode_data(...)
 
+    best_val_acc = 0.0
     logging.info('Training the model:')
     def sample_minibatch(X, y, grad = True):
         loss, acc = agent.update(X, y, grad)
@@ -155,15 +156,18 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
                 "val_acc" : avg_val_acc
             }
             if i % 100 == 0:
-                tensorboard_eval.write_episode_data(epoch, eval_dict)               
+                tensorboard_eval.write_episode_data(epoch, eval_dict)
+
+            if avg_val_acc > best_val_acc:
+                best_val_acc = avg_val_acc
+                model_dir = agent.save(os.path.join(model_dir, "agent.pt"))
+                print("Model saved in file: %s" % model_dir)
 
 
 
     # TODO: save your agent
     # model_dir = agent.save(os.path.join(model_dir, "agent.pt"))
     # print("Model saved in file: %s" % model_dir)
-    model_dir = agent.save(os.path.join(model_dir, "agent.pt"))
-    print("Model saved in file: %s" % model_dir)
 
 if __name__ == "__main__":
 
@@ -175,5 +179,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=1000, n_minibatches=10, batch_size=128, lr=1e-2)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs=10, n_minibatches=1000, batch_size=64, lr=1e-2)
  
