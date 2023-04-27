@@ -160,7 +160,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
 
             if avg_val_acc > best_val_acc:
                 best_val_acc = avg_val_acc
-                model_dir = agent.save(os.path.join(model_dir, "agent.pt"))
+                agent.save(os.path.join(model_dir, "agent.pt"))
                 print("Model saved in file: %s" % model_dir)
 
 
