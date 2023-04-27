@@ -42,17 +42,17 @@ class CNN(nn.Module):
             # self.block3_conv1, self.block3_bn1, self.block3_act1, self.block3_conv2, self.block3_bn2, self.block3_act2, self.block3_pool, 
         ]
 
-        # self.conv1 = nn.Conv2d(in_channels=history_length, out_channels=32, kernel_size=3, stride=1, padding='same')
-        # self.bn1 = nn.BatchNorm2d(num_features=32)
-        # self.act1 = nn.LeakyReLU(negative_slope=0.2)
-        # self.pool1 = nn.MaxPool2d(kernel_size=(2))
-        # self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding='same')
-        # self.bn2 = nn.BatchNorm2d(num_features=64)
-        # self.act2 = nn.LeakyReLU(negative_slope=0.2)
-        # self.pool2 = nn.AvgPool2d(kernel_size=(48))
+        self.conv1 = nn.Conv2d(in_channels=history_length, out_channels=32, kernel_size=3, stride=1, padding='same')
+        self.bn1 = nn.BatchNorm2d(num_features=32)
+        self.act1 = nn.LeakyReLU(negative_slope=0.2)
+        self.pool1 = nn.MaxPool2d(kernel_size=(2))
+        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=1, padding='same')
+        self.bn2 = nn.BatchNorm2d(num_features=64)
+        self.act2 = nn.LeakyReLU(negative_slope=0.2)
+        self.pool2 = nn.AvgPool2d(kernel_size=(48))
 
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(128, 32)
+        self.fc1 = nn.Linear(64, 32)
         self.act_fc1 = nn.LeakyReLU(negative_slope=0.02)
         self.drop1 = nn.Dropout(0.1)
         self.fc2 = nn.Linear(32, 128)
@@ -66,28 +66,28 @@ class CNN(nn.Module):
 
     def forward(self, x):
         # TODO: compute forward pass
-        inp = x
-        blocks = []
-        count = 0
-        for layer in self.conv_layers:
-            x = layer(x)
-            count += 1
-            if count == 8: # or count == 15:
-                inp = x
-            if count == 4 or count == 11: # or count == 18:
-            #    blocks.append(x)
-            #    count = 0
-               x = torch.add(x, inp)
-            #    blocks = []
+        # inp = x
+        # blocks = []
+        # count = 0
+        # for layer in self.conv_layers:
+        #     x = layer(x)
+        #     count += 1
+        #     if count == 8: # or count == 15:
+        #         inp = x
+        #     if count == 4 or count == 11: # or count == 18:
+        #     #    blocks.append(x)
+        #     #    count = 0
+        #        x = torch.add(x, inp)
+        #     #    blocks = []
 
-        # x = self.conv1(x)
-        # x = self.bn1(x)
-        # x = self.act1(x)
-        # x = self.pool1(x)
-        # x = self.conv2(x)
-        # x = self.bn2(x)
-        # x = self.act2(x)
-        # x = self.pool2(x)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.act1(x)
+        x = self.pool1(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.act2(x)
+        x = self.pool2(x)
 
 
         x = self.flatten(x)
