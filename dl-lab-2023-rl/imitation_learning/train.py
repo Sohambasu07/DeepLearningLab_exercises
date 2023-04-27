@@ -157,7 +157,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, n_minibatche
         if i % 10 == 0:
             tensorboard_eval.write_episode_data(i, eval_dict)
             agent.save(os.path.join(model_dir, "agent.pt"))
-            print("Model saved in file: %s" % model_dir)
+            # print("Model saved in file: %s" % model_dir)
 
         if avg_val_acc > best_val_acc:
             best_val_acc = avg_val_acc
