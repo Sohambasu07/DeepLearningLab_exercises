@@ -72,7 +72,7 @@ def show_hist(Y, save):
     plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
     plt.xticks([0, 1, 2, 3])
     plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
-    plt.show()
+    # plt.show()
 
 
 def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
