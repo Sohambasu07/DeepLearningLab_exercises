@@ -44,8 +44,8 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
         act = torch.argmax(act).item()
         a = id_to_action(act)
 
-        # if step<=20:
-        #     a = np.array([0.0, 1.0, 0.0])
+        if step<=20:
+            a = np.array([0.0, 1.0, 0.0])
 
         next_state, r, done, info = env.step(a)   
         episode_reward += r       
