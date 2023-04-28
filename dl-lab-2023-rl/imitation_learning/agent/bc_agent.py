@@ -5,7 +5,7 @@ from torchsummary import summary
 
 class BCAgent:
     
-    def __init__(self, lr=0.001, hist_len = 1, n_classes = 5):
+    def __init__(self, lr=0.001, hist_len = 1, n_classes = 4):
         # TODO: Define network, loss function, optimizer
         # self.net = CNN(...)
         self.lr = lr
@@ -16,22 +16,20 @@ class BCAgent:
         self.criterion = torch.nn.CrossEntropyLoss().to(self.device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr = self.lr)
         summary(self.net, (self.history_length, 96, 96))
+        torch.onnx.export(self.net, torch.randn(1, hist_len, 96, 96, device = self.device), "./figs/ImitationBig.onnx", verbose=False)
 
     def update(self, X_batch, y_batch, grad = True):
         # TODO: transform input to tensors
         # TODO: forward + backward + optimize
         x = torch.Tensor(X_batch).to(self.device)
         y = torch.Tensor(y_batch).type(torch.LongTensor).to(self.device)
-        # print(x.shape, y.shape)
 
         outputs = self.net(x)
-        # print(outputs.shape, y.shape)
         loss = self.criterion(outputs, y)
         if grad:
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-        # print(outputs, y)
         outputs = torch.argmax(outputs, dim=1)
         acc = torch.sum(outputs == y).float()/len(y)
         return loss.item(), acc.item()

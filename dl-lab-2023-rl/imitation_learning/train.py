@@ -12,6 +12,7 @@ import torch
 import logging
 from tqdm import tqdm
 from tqdm import trange
+import random
 
 from utils import *
 from agent.bc_agent import BCAgent
@@ -41,6 +42,38 @@ def read_data(datasets_dir="./data", frac = 0.1):
     X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
     return X_train, y_train, X_valid, y_valid
 
+def balance_actions(X, y, drop):
+    num_st = y.count(0)
+    # print(num_st)
+    # print(type(X_train), type(y_train))
+    st = random.sample([i for i, j in enumerate(y) if j == 0], int(drop*num_st))
+    st.sort()
+    # print(len(st))
+    y_b = []
+    X_b = np.empty(shape=(X.shape[0] - len(st), X.shape[1], X.shape[2]))
+    # print(len(X_b))
+    iter = 0
+    i = 0
+    for i in range(len(X)):
+        if i in st:
+            continue
+        y_b.append(y[i])
+        X_b[iter] = X[i]
+        iter += 1
+    return X_b, y_b
+
+
+def show_hist(Y, save):
+    plt.figure()
+    counts, bins = np.histogram(y_train, bins = 4)
+    values, count = np.unique(np.array(Y), return_counts = True)
+    Y_dict = dict(zip(values, count))
+    print(Y_dict)
+    plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
+    plt.xticks([0, 1, 2, 3])
+    plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
+    plt.show()
+
 
 def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
 
@@ -51,14 +84,22 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
 
     print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
 
+
     X_train = rgb2gray(X_train)
     X_valid = rgb2gray(X_valid)
     y_train = [action_to_id(i) for i in y_train]
     y_valid = [action_to_id(i) for i in y_valid]
-    # print(X_train.shape, X_valid.shape)
+    print(len(y_train))
+
+    show_hist(y_train, save = 'Before')
+
+    X_train, y_train = balance_actions(X_train, y_train, drop = 0.6)
+    print(X_train.shape, len(y_train))
+
+    show_hist(y_train, save = 'After')
+
     # X_train = np.reshape(np.expand_dims(X_train, 1), (len(X_train) - history_length + 1, history_length, X_train.shape[-2], X_train.shape[-1]))
     X_train = np.array([X_train[frame - history_length : frame] for frame in range(history_length, X_train.shape[0] + 1) ])
-    # print(X_train.shape, type(X_train))
     X_valid = np.array([X_valid[frame - history_length : frame] for frame in range(history_length, X_valid.shape[0] + 1) ])
     # X_valid = np.reshape(np.expand_dims(X_valid, 1), (len(X_valid) - history_length + 1, history_length, X_valid.shape[-2], X_valid.shape[-1]))
     y_train = np.array(y_train[history_length - 1:])
@@ -78,8 +119,6 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, n_minibatche
     if not os.path.exists(model_dir):
         os.mkdir(model_dir) 
  
-    # print("... train model")
-
 
     # TODO: specify your agent with the neural network in agents/bc_agent.py 
     # agent = BCAgent(...)
@@ -112,16 +151,11 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, n_minibatche
     logging.info('#' * 50)
     i = 0
     t = trange(n_minibatches, desc='')
-    # loss_list = []
-    # acc_list = []
     for iter in t: #range(n_minibatches):
         frame_num = np.random.randint(0, len(X_train), batch_size)
-        # print(X_train.shape, y_train.shape)
         X_batch = X_train[frame_num]
         y_batch = y_train[frame_num]
         train_loss, train_acc = sample_minibatch(X_batch, y_batch)
-        # loss_list.append(train_loss)
-        # acc_list.append(train_acc)
         avg_train_loss = (avg_train_loss*i + train_loss)/(i + 1)
         avg_train_acc = (avg_train_acc*i + train_acc)/(i + 1)
         # logging.info('Training Loss per batch: %f', train_loss)
@@ -134,7 +168,6 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, n_minibatche
         avg_val_acc = 0.0
         for v_batch in range(int(len(X_valid)/batch_size)):
             v_frames = np.random.randint(0, len(X_valid), batch_size)
-            # v_frames = np.arange(b, b + batch_size, 1)
             X_batch_v = X_valid[v_frames]
             y_batch_v = y_valid[v_frames]
             val_loss, val_acc = sample_minibatch(X_batch_v, y_batch_v, False)
@@ -184,5 +217,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, n_minibatches=10000, batch_size=32, lr=5e-3)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, n_minibatches=10000, batch_size=32, lr=1e-4)
  
