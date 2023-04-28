@@ -6,23 +6,6 @@ from torchsummary import summary
 """
 Imitation learning network
 """
-
-# class Layer(nn.Module):
-#     def __init__(self, in_features, out_features, kernel_size, stride = 1, padding = 0, batch_norm = True):
-#         self.in_features = in_features
-#         self.out_features = out_features
-#         self.kernel_size = kernel_size
-#         self.stride = stride
-#         self.padding = padding
-#         self.batch_norm = batch_norm
-
-#     def forward(self, x):
-#         x = nn.Conv2d(in_channels=self.in_features, out_channels=self.out_features, kernel_size=self.kernel_size, stride=self.stride, padding=self.padding)
-#         if self.batch_norm:
-#             x = nn.BatchNorm2d(num_features = self.out_features)
-#         return x
-
-
 class CNN(nn.Module):
 
     def __init__(self, history_length=1, n_classes=4): 
@@ -113,6 +96,6 @@ class CNN(nn.Module):
         x = self.act_fc2(x)
         x = self.drop2(x)
         x = self.fc_out(x)
-        # x = self.output(x)
+        x = self.output(x)
 
         return x

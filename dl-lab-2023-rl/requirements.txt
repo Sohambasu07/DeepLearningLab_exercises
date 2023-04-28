@@ -5,3 +5,7 @@ tensorboard==1.15.0
 matplotlib==3.5.1
 protobuf==3.20
 pyglet==1.5.27
+tensorboard==2.12.2
+tqdm
+onnx
+torchsummary
