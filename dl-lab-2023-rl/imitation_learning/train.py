@@ -36,43 +36,35 @@ def read_data(datasets_dir="./data", frac = 0.1):
     X = np.array(data["state"]).astype('float32')
     y = np.array(data["action"]).astype('float32')
 
+    show_hist([action_to_id(i) for i in y], 'Expert_Data')
+    
     # split data into training and validation set
     n_samples = len(data["state"])
-    X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
-    X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
+    print(X.shape, y.shape)
+
+    train_samples = np.array(random.sample(list(np.arange(0, len(X), 1)), int((1-frac) * n_samples))) #np.random.randint(0, len(X), int((1-frac) * n_samples))
+    mask = np.ones(n_samples, int)
+    mask[train_samples] = 0
+    # mask = mask[mask == 1]
+    mask = np.where(mask == 1)
+    # print(mask)
+    # print(mask.shape)
+
+
+    X_train, y_train = X[train_samples], y[train_samples]
+    X_valid, y_valid = X[mask], y[mask]
+
+    
+    values, count = np.unique(np.array([action_to_id(i) for i in y_valid]), return_counts = True)
+    print(dict(zip(values, count)))
+
+
+
+    # X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
+    # X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
+
+    print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
     return X_train, y_train, X_valid, y_valid
-
-def balance_actions(X, y, drop):
-    num_st = y.count(0)
-    # print(num_st)
-    # print(type(X_train), type(y_train))
-    st = random.sample([i for i, j in enumerate(y) if j == 0], int(drop*num_st))
-    st.sort()
-    # print(len(st))
-    y_b = []
-    X_b = np.empty(shape=(X.shape[0] - len(st), X.shape[1], X.shape[2]))
-    # print(len(X_b))
-    iter = 0
-    i = 0
-    for i in range(len(X)):
-        if i in st:
-            continue
-        y_b.append(y[i])
-        X_b[iter] = X[i]
-        iter += 1
-    return X_b, y_b
-
-
-def show_hist(Y, save):
-    plt.figure()
-    counts, bins = np.histogram(y_train, bins = 4)
-    values, count = np.unique(np.array(Y), return_counts = True)
-    Y_dict = dict(zip(values, count))
-    print(Y_dict)
-    plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
-    plt.xticks([0, 1, 2, 3])
-    plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
-    # plt.show()
 
 
 def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
@@ -82,14 +74,10 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
     # 2. you can train your model with discrete actions (as you get them from read_data) by discretizing the action space 
     #    using action_to_id() from utils.py.
 
-    print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
-
-
     X_train = rgb2gray(X_train)
     X_valid = rgb2gray(X_valid)
     y_train = [action_to_id(i) for i in y_train]
     y_valid = [action_to_id(i) for i in y_valid]
-    print(len(y_train))
 
     show_hist(y_train, save = 'Before')
 
@@ -97,6 +85,8 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
     print(X_train.shape, len(y_train))
 
     show_hist(y_train, save = 'After')
+
+    show_hist(y_valid, save = 'Validation')
 
     
 
@@ -108,6 +98,7 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
     y_valid = np.array(y_valid[history_length - 1:])
 
     print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
+
 
     # History:
     # At first you should only use the current image as input to your network to learn the next action. Then the input states
@@ -156,7 +147,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
         i = 0
         t = trange(n_minibatches, desc='')
         for iter in t: #range(n_minibatches):
-            frame_num = np.random.randint(0, len(X_train), batch_size)
+            frame_num = np.array(random.sample(list(np.arange(0, len(X_train), 1)), batch_size)) #np.random.randint(0, len(X_train), batch_size)
             X_batch = X_train[frame_num]
             y_batch = y_train[frame_num]
             train_loss, train_acc = sample_minibatch(X_batch, y_batch)
@@ -172,7 +163,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
         logging.info('Validation model:')
         v_batch = trange(int(len(X_valid)/batch_size), desc='')
         for iter in v_batch:
-            v_frames = np.random.randint(0, len(X_valid), batch_size)
+            v_frames = np.array(random.sample(list(np.arange(0, len(X_valid), 1)), batch_size)) #np.random.randint(0, len(X_valid), batch_size)
             X_batch_v = X_valid[v_frames]
             y_batch_v = y_valid[v_frames]
             val_loss, val_acc = sample_minibatch(X_batch_v, y_batch_v, False)
@@ -217,5 +208,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 10, n_minibatches=1000, batch_size=32, lr=1e-2)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 100, n_minibatches=1000, batch_size=128, lr=3e-4)
  

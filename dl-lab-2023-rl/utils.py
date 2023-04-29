@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import random
 
 LEFT =1
 RIGHT = 2
@@ -45,6 +47,37 @@ def id_to_action(action_id, max_speed=0.8):
         return np.array([0.0, 0.0, 0.1])
     else:
         return np.array([0.0, 0.0, 0.0])
+    
+
+def show_hist(Y, save):
+    plt.figure()
+    values, count = np.unique(np.array(Y), return_counts = True)
+    Y_dict = dict(zip(values, count))
+    print(Y_dict)
+    plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
+    plt.xticks([0, 1, 2, 3])
+    plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
+    # plt.show()
+
+def balance_actions(X, y, drop):
+    num_st = y.count(0)
+    # print(num_st)
+    # print(type(X_train), type(y_train))
+    st = random.sample([i for i, j in enumerate(y) if j == 0], int(drop*num_st))
+    st.sort()
+    # print(len(st))
+    y_b = []
+    X_b = np.empty(shape=(X.shape[0] - len(st), X.shape[1], X.shape[2]))
+    # print(len(X_b))
+    iter = 0
+    i = 0
+    for i in range(len(X)):
+        if i in st:
+            continue
+        y_b.append(y[i])
+        X_b[iter] = X[i]
+        iter += 1
+    return X_b, y_b
     
 
 class EpisodeStats:

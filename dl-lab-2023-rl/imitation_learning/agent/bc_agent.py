@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 from agent.networks import CNN
 from torchsummary import summary
+import torchvision
 
 class BCAgent:
     
@@ -14,6 +15,7 @@ class BCAgent:
         print(self.device)
         self.net = CNN(self.history_length, n_classes).to(self.device)
         self.criterion = torch.nn.CrossEntropyLoss().to(self.device)
+        # self.criterion = torchvision.ops.sigmoid_focal_loss().to(self.device)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr = self.lr)
         summary(self.net, (self.history_length, 96, 96))
         torch.onnx.export(self.net, torch.randn(1, hist_len, 96, 96, device = self.device), "./figs/ImitationBig.onnx", verbose=False)
