@@ -1,5 +1,5 @@
 import sys
-sys.path.append("../") 
+sys.path.append("./") 
 
 import numpy as np
 import gym
@@ -8,6 +8,7 @@ from agent.dqn_agent import DQNAgent
 from tensorboard_evaluation import *
 from agent.networks import MLP
 from utils import EpisodeStats
+import torch
 
 
 def run_episode(env, agent, deterministic, do_training=True, rendering=False, max_timesteps=1000):
@@ -23,7 +24,7 @@ def run_episode(env, agent, deterministic, do_training=True, rendering=False, ma
     step = 0
     while True:
         
-        action_id = agent.act(state=state, deterministic=deterministic)
+        action_id = agent.act(state=state, deterministic=deterministic, env='CartPole')
         next_state, reward, terminal, info = env.step(action_id)
 
         if do_training:  
@@ -43,18 +44,20 @@ def run_episode(env, agent, deterministic, do_training=True, rendering=False, ma
 
     return stats
 
-def train_online(env, agent, num_episodes, model_dir="./models_cartpole", tensorboard_dir="./tensorboard"):
+def train_online(env, agent, num_episodes=1000, model_dir="./models_cartpole", tensorboard_dir="./tensorboard"):
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)  
  
     print("... train agent")
 
-    tensorboard = Evaluation(os.path.join(tensorboard_dir, "train"), ["episode_reward", "a_0", "a_1"])
+    tensorboard = Evaluation(os.path.join(tensorboard_dir, "train"), name='CartPoleRuns', stats=["episode_reward", "a_0", "a_1"])
 
     # training
+    
+    best_eval_reward = 0.0
     for i in range(num_episodes):
         print("episode: ",i)
-        stats = run_episode(env, agent, deterministic=False, do_training=True)
+        stats = run_episode(env, agent, deterministic=False, do_training=True, rendering=True)
         tensorboard.write_episode_data(i, eval_dict={  "episode_reward" : stats.episode_reward, 
                                                                 "a_0" : stats.get_action_usage(0),
                                                                 "a_1" : stats.get_action_usage(1)})
@@ -67,8 +70,18 @@ def train_online(env, agent, num_episodes, model_dir="./models_cartpole", tensor
         #       ...
         
         # store model.
-        if i % eval_cycle == 0 or i >= (num_episodes - 1):
-            agent.save(os.path.join(model_dir, "dqn_agent.pt"))
+
+        if i % eval_cycle == 0:
+            avg_eval_reward = 0.0
+            for j in range(num_eval_episodes):
+                stats = run_episode(env, agent, deterministic=True, do_training=False, rendering=True)
+                avg_eval_reward = (avg_eval_reward*j + stats.episode_reward)/(j + 1)
+            print("Evaluation Reward for {:.4f}".format(avg_eval_reward))
+            if avg_eval_reward > best_eval_reward:
+                best_eval_reward = avg_eval_reward
+                agent.save(os.path.join(model_dir, "dqn_agent_best.pt"))
+                print("Model saved")
+    agent.save(os.path.join(model_dir, "dqn_agent_final.pt"))
    
     tensorboard.close_session()
 
@@ -91,4 +104,28 @@ if __name__ == "__main__":
     # 1. init Q network and target network (see dqn/networks.py)
     # 2. init DQNAgent (see dqn/dqn_agent.py)
     # 3. train DQN agent with train_online(...)
- 
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print(device)
+
+    Q_network = MLP(state_dim, num_actions).to(device)
+    # Q_network.to(device)
+    Q_target = MLP(state_dim, num_actions).to(device)
+    # Q_target.to(device)
+
+    # for p in Q_network.parameters():
+    #     p.data = p.to(device)
+    #     if p.grad is not None:
+    #         p.grad.data = p.grad.to(device)
+
+    
+    # for p in Q_target.parameters():
+    #     p.data = p.to(device)
+    #     if p.grad is not None:
+    #         p.grad.data = p.grad.to(device)
+
+    print(next(Q_target.parameters()).device)
+    print(next(Q_network.parameters()).device)
+
+    dqn = DQNAgent(Q_network, Q_target, num_actions, device = device, history_length=100000)
+
+    train_online(env=env, agent=dqn)

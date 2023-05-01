@@ -14,6 +14,11 @@ import torch.nn.functional as F
 from agent.bc_agent import BCAgent
 from utils import *
 
+history_length = 1
+
+state_hist = np.empty((history_length, 96, 96), dtype=np.int)
+state_count = 0
+
 act_hist = np.empty(100, dtype=np.int32)
 print(len(act_hist))
 act_hist.fill(-1)
@@ -35,6 +40,22 @@ def check_and_unfreeze(action):
     print("Freeeeeeeeeeeeeeezeeeeeeeee!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ", frz_count)
     return True
 
+def edit_state_hist(new_state):
+    global history_length
+    # global state_count
+    if history_length != 1:
+        # if state_count == history_length:
+        #     state_count = 0
+        i = history_length-1
+        for state in state_hist[-2::-1]:
+            # print(state.shape)
+            state_hist[i] = state
+            i -= 1
+        state_hist[0] = new_state
+
+
+
+
 def run_episode(env, agent, rendering=True, max_timesteps=1000):
     
     episode_reward = 0
@@ -52,6 +73,27 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
 
         state = rgb2gray(state)
         state = np.expand_dims(state, (0, 1))
+        # state = np.repeat(state, history_length, axis = 1)
+        # global state_hist
+        # global history_length
+        # if step == 0:
+        #     state_hist = np.repeat(np.expand_dims(state, 0), history_length, axis = 0)
+        # else:
+        #     edit_state_hist(state)
+        # state = np.expand_dims(state_hist, (0))
+
+        # if step>=100:
+        #     plt.imshow(np.swapaxes(state[:, 0], 0, -1))
+        #     plt.show()
+        #     plt.imshow(np.swapaxes(state[:, 1], 0, -1))
+        #     plt.show()
+        #     plt.imshow(np.swapaxes(state[:, 2], 0, -1))
+        #     plt.show()
+        #     exit()
+
+        # print(state_hist.shape)
+        # print(state.shape)
+
         # TODO: get the action from your agent! You need to transform the discretized actions to continuous
         # actions.
         # hints:
@@ -59,6 +101,8 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
         #       - just in case your agent misses the first turn because it is too fast: you are allowed to clip the acceleration in test_agent.py
         #       - you can use the softmax output to calculate the amount of lateral acceleration
         # a = ...
+
+
         act = F.softmax(agent.predict(state))
         print(torch.argmax(act))
         act = torch.argmax(act).item()
@@ -84,10 +128,10 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
         if step<=15:
             a = np.array([0.0, 1.0, 0.0])
 
-        if step>=20 and step<=80 and  np.all(act_hist[:8] == 3):
+        if step>=20 and step<=80: #and  np.all(act_hist[:30] == 3):
             a = np.array([0.0, 0.0, 0.0])
 
-        if step<=(frz_step+5):a = np.array([0.0, 1.0, 0.0])
+        # if step<=(frz_step+5):a = np.array([0.0, 1.0, 0.0])
 
         next_state, r, done, info = env.step(a)   
         episode_reward += r       
@@ -113,7 +157,8 @@ if __name__ == "__main__":
     # TODO: load agent
     # agent = BCAgent(...)
     # agent.load("models/bc_agent.pt")
-    agent = BCAgent()
+    # global history_length
+    agent = BCAgent(hist_len=history_length)
     agent.load("models/agent.pt")
 
     env = gym.make('CarRacing-v0').unwrapped

@@ -20,7 +20,7 @@ from tensorboard_evaluation import Evaluation
 
 logging.basicConfig(level = logging.INFO)
 
-def read_data(datasets_dir="./data", frac = 0.1):
+def read_data(datasets_dir="./data", frac = 0.15):
     """
     This method reads the states and actions recorded in drive_manually.py 
     and splits it into training/ validation set.
@@ -36,32 +36,30 @@ def read_data(datasets_dir="./data", frac = 0.1):
     X = np.array(data["state"]).astype('float32')
     y = np.array(data["action"]).astype('float32')
 
+    X = X[:25000]
+    y = y[:25000]
+
     show_hist([action_to_id(i) for i in y], 'Expert_Data')
     
     # split data into training and validation set
-    n_samples = len(data["state"])
+    n_samples = len(X) #len(data["state"])
     print(X.shape, y.shape)
 
-    train_samples = np.array(random.sample(list(np.arange(0, len(X), 1)), int((1-frac) * n_samples))) #np.random.randint(0, len(X), int((1-frac) * n_samples))
-    mask = np.ones(n_samples, int)
-    mask[train_samples] = 0
-    # mask = mask[mask == 1]
-    mask = np.where(mask == 1)
-    # print(mask)
-    # print(mask.shape)
+    # train_samples = np.array(random.sample(list(np.arange(0, len(X), 1)), int((1-frac) * n_samples))) #np.random.randint(0, len(X), int((1-frac) * n_samples))
+    # mask = np.ones(n_samples, int)
+    # mask[train_samples] = 0
+    # mask = np.where(mask == 1)
 
 
-    X_train, y_train = X[train_samples], y[train_samples]
-    X_valid, y_valid = X[mask], y[mask]
+    # X_train, y_train = X[train_samples], y[train_samples]
+    # X_valid, y_valid = X[mask], y[mask]
 
     
+    X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
+    X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
+
     values, count = np.unique(np.array([action_to_id(i) for i in y_valid]), return_counts = True)
     print(dict(zip(values, count)))
-
-
-
-    # X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
-    # X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
 
     print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
     return X_train, y_train, X_valid, y_valid
@@ -81,7 +79,7 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
 
     show_hist(y_train, save = 'Before')
 
-    X_train, y_train = balance_actions(X_train, y_train, drop = 0.5)
+    X_train, y_train = balance_actions(X_train, y_train, drop = 0.7)
     print(X_train.shape, len(y_train))
 
     show_hist(y_train, save = 'After')
@@ -184,11 +182,12 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
         }
         # if i % 10 == 0:
         tensorboard_eval.write_episode_data(epoch, eval_dict)
-        agent.save(os.path.join(model_dir, "agent.pt"))
-        # print("Model saved in file: %s" % model_dir)
+        
 
         if avg_val_acc > best_val_acc:
             best_val_acc = avg_val_acc
+            agent.save(os.path.join(model_dir, "agent.pt"))
+            print("Model saved in file: %s" % model_dir)
 
 
 
@@ -208,5 +207,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 100, n_minibatches=1000, batch_size=128, lr=3e-4)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 100, n_minibatches=1000, batch_size=80, lr=3e-4)
  

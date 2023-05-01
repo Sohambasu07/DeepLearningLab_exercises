@@ -15,6 +15,13 @@ if __name__ == "__main__":
 
     # TODO: load DQN agent
     # ...
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print(device)
+
+    Q_network = MLP(state_dim=4, action_dim=2).to(device)
+    Q_target = MLP(state_dim=4, action_dim=2).to(device)
+    agent = DQNAgent(Q_network, Q_target, num_actions=4, device=device)
+    agent.load('./models_cartpole/dqn_agent_best.pt')
  
     n_test_episodes = 15
 
