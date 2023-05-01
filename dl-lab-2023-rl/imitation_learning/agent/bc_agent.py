@@ -6,7 +6,7 @@ import torchvision
 
 class BCAgent:
     
-    def __init__(self, lr=0.001, hist_len = 1, n_classes = 4):
+    def __init__(self, lr=0.001, hist_len = 1, n_classes = 5):
         # TODO: Define network, loss function, optimizer
         # self.net = CNN(...)
         self.lr = lr

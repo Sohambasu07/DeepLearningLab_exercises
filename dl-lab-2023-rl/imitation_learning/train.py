@@ -20,7 +20,7 @@ from tensorboard_evaluation import Evaluation
 
 logging.basicConfig(level = logging.INFO)
 
-def read_data(datasets_dir="./data", frac = 0.15):
+def read_data(datasets_dir="./data", frac = 0.10):
     """
     This method reads the states and actions recorded in drive_manually.py 
     and splits it into training/ validation set.
@@ -36,8 +36,8 @@ def read_data(datasets_dir="./data", frac = 0.15):
     X = np.array(data["state"]).astype('float32')
     y = np.array(data["action"]).astype('float32')
 
-    X = X[:25000]
-    y = y[:25000]
+    # X = X[:25000]
+    # y = y[:25000]
 
     show_hist([action_to_id(i) for i in y], 'Expert_Data')
     
@@ -114,7 +114,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
 
     # TODO: specify your agent with the neural network in agents/bc_agent.py 
     # agent = BCAgent(...)
-    agent = BCAgent(lr, history_length)
+    agent = BCAgent(lr, history_length, n_classes=5)
     
     tensorboard_eval = Evaluation(tensorboard_dir, "Run1", stats = ["train_loss", "train_acc", "val_loss", "val_acc"])
 
