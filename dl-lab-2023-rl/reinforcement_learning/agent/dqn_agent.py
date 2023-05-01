@@ -114,7 +114,7 @@ class DQNAgent:
             # To see how the agent explores, turn the rendering in the training on and look what the agent is doing.
             # action_id = ...
             if env == 'CarRacing':
-                action_id = int(np.random.choice([3, 0, 2, 1, 4], p=[0.4, 0.2, 0.17, 0.17, 0.06]))
+                action_id = int(np.random.choice([3, 0, 2, 1, 4], p=[0.27, 0.36, 0.20, 0.12, 0.05]))
             else:
                 action_id = np.random.randint(self.num_actions) #sampling from a Uniform Distribution
             # print(action_id)

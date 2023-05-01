@@ -114,7 +114,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
 
     # TODO: specify your agent with the neural network in agents/bc_agent.py 
     # agent = BCAgent(...)
-    agent = BCAgent(lr, history_length, n_classes=5)
+    agent = BCAgent(lr, history_length, n_classes=4)
     
     tensorboard_eval = Evaluation(tensorboard_dir, "Run1", stats = ["train_loss", "train_acc", "val_loss", "val_acc"])
 
@@ -188,6 +188,9 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
             best_val_acc = avg_val_acc
             agent.save(os.path.join(model_dir, "agent.pt"))
             print("Model saved in file: %s" % model_dir)
+
+        agent.save(os.path.join(model_dir, "agent_final.pt"))
+        # print("Model saved in file: %s" % model_dir)
 
 
 

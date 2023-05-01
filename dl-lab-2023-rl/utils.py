@@ -57,7 +57,7 @@ def show_hist(Y, save):
     plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
     plt.xticks([0, 1, 2, 3])
     plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
-    # plt.show()
+    plt.show()
 
 def balance_actions(X, y, drop):
     num_st = y.count(0)

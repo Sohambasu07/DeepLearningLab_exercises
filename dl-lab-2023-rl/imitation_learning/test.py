@@ -15,6 +15,7 @@ from agent.bc_agent import BCAgent
 from utils import *
 
 history_length = 1
+brake_step = 0
 
 state_hist = np.empty((history_length, 96, 96), dtype=np.int)
 state_count = 0
@@ -110,6 +111,7 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
 
         global counter
         global frz_step
+        global brake_step
 
         if counter == act_hist_len:
             counter = 0
@@ -120,16 +122,29 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
         act_hist[counter] = act
         counter += 1
 
+
+        if act == 0:
+            act = int(np.random.choice([0, 3], p= [0.40, 0.60]))
         a = id_to_action(act)
+
+        if (act == 1 or act == 2) and (step - brake_step >= 20):
+            temp = act
+            a = id_to_action(4)
+            next_state, r, done, info = env.step(a)
+            episode_reward += r
+            state = next_state
+            step+=1
+            brake_step = step
+            a = id_to_action(temp)
 
         unique, counts = np.unique(act_hist, return_counts = True)
         print(dict(zip(unique, counts)))
 
-        if step<=15:
+        if step<=20:
             a = np.array([0.0, 1.0, 0.0])
 
-        if step>=20 and step<=80: #and  np.all(act_hist[:30] == 3):
-            a = np.array([0.0, 0.0, 0.0])
+        # if step>=20 and step<=50: #and  np.all(act_hist[:30] == 3):
+        #     a = np.array([0.0, 0.0, 0.0])
 
         # if step<=(frz_step+5):a = np.array([0.0, 1.0, 0.0])
 
@@ -158,9 +173,9 @@ if __name__ == "__main__":
     # agent = BCAgent(...)
     # agent.load("models/bc_agent.pt")
     # global history_length
-    n_classes = 5
+    n_classes = 4
     agent = BCAgent(hist_len=history_length, n_classes=n_classes)
-    agent.load("models/agent_best.pt")
+    agent.load("models/agent_final.pt")
 
     env = gym.make('CarRacing-v0').unwrapped
 
