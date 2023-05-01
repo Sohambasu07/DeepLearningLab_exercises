@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # global history_length
     n_classes = 5
     agent = BCAgent(hist_len=history_length, n_classes=n_classes)
-    agent.load("models/agent.pt")
+    agent.load("models/agent_best.pt")
 
     env = gym.make('CarRacing-v0').unwrapped
 
