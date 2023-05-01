@@ -21,7 +21,7 @@ class ReplayBuffer:
 
         # Replay Buffer capacity using FIFO
 
-        pop_pos = 0
+        pop_pos = 10000
 
         if len(self._data.states) == self.history_length and self.history_length != 0:
             self._data.states.pop(pop_pos)
