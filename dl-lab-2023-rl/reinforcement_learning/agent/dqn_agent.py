@@ -73,6 +73,7 @@ class DQNAgent:
 
         # print(batch_states.dtype, batch_next_states.dtype)
         # print(batch_states.shape, batch_actions.shape, batch_next_states.shape, batch_rewards.shape, batch_dones.shape)
+
         td_target = (batch_rewards + self.gamma * (torch.max(self.Q_target(batch_next_states), dim=1)[0])*(1 - batch_dones)).type(torch.FloatTensor).cuda()
         outputs = self.Q(batch_states).gather(dim = 1, index = batch_actions.unsqueeze(1).long()).squeeze(1)
         self.optimizer.zero_grad()
@@ -114,7 +115,7 @@ class DQNAgent:
             # To see how the agent explores, turn the rendering in the training on and look what the agent is doing.
             # action_id = ...
             if env == 'CarRacing':
-                action_id = int(np.random.choice([3, 0, 2, 1, 4], p=[0.27, 0.36, 0.20, 0.12, 0.05]))
+                action_id = int(np.random.choice([3, 0, 2, 1, 4], p=[0.37, 0.26, 0.17, 0.15, 0.05]))
             else:
                 action_id = np.random.randint(self.num_actions) #sampling from a Uniform Distribution
             # print(action_id)

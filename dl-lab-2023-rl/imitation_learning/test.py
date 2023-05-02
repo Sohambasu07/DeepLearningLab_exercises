@@ -124,23 +124,13 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
 
 
         if act == 0:
-            act = int(np.random.choice([0, 3], p= [0.40, 0.60]))
+            act = int(np.random.choice([0, 3], p= [0.4, 0.60]))
         a = id_to_action(act)
-
-        if (act == 1 or act == 2) and (step - brake_step >= 20):
-            temp = act
-            a = id_to_action(4)
-            next_state, r, done, info = env.step(a)
-            episode_reward += r
-            state = next_state
-            step+=1
-            brake_step = step
-            a = id_to_action(temp)
 
         unique, counts = np.unique(act_hist, return_counts = True)
         print(dict(zip(unique, counts)))
 
-        if step<=20:
+        if step<=40:
             a = np.array([0.0, 1.0, 0.0])
 
         # if step>=20 and step<=50: #and  np.all(act_hist[:30] == 3):

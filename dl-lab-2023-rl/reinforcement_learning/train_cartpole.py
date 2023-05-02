@@ -108,23 +108,11 @@ if __name__ == "__main__":
     print(device)
 
     Q_network = MLP(state_dim, num_actions).to(device)
+    Q_target = MLP(state_dim=4, action_dim=2).to(device)
     # Q_network.to(device)
-    Q_target = MLP(state_dim, num_actions).to(device)
     # Q_target.to(device)
 
-    # for p in Q_network.parameters():
-    #     p.data = p.to(device)
-    #     if p.grad is not None:
-    #         p.grad.data = p.grad.to(device)
-
-    
-    # for p in Q_target.parameters():
-    #     p.data = p.to(device)
-    #     if p.grad is not None:
-    #         p.grad.data = p.grad.to(device)
-
-    print(next(Q_target.parameters()).device)
-    print(next(Q_network.parameters()).device)
+    # print(next(Q_network.parameters()).device)
 
     dqn = DQNAgent(Q_network, Q_target, num_actions, device = device, history_length=100000)
 

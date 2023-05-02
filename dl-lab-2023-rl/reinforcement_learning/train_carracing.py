@@ -11,8 +11,7 @@ from utils import *
 from agent.dqn_agent import DQNAgent
 import torch
 from imitation_learning.agent.networks import CNN
-# from torchsummary import summary
-from torchinfo import summary
+from torchsummary import summary
 
 
 def run_episode(env, agent, deterministic, skip_frames=0,  do_training=True, rendering=False, max_timesteps=1000, history_length=0):
@@ -99,17 +98,15 @@ def train_online(env, agent, num_episodes, history_length=0, model_dir="./models
 
         # Hint: you can keep the episodes short in the beginning by changing max_timesteps (otherwise the car will spend most of the time out of the track)
 
-        max_timesteps = 300
+        max_timesteps = 200
         epsilon = 1.0
 
-        if i <= 300:
-            epsilon *= 0.999
-        else:
+        if i > 200:
             epsilon *= 0.995
             max_timesteps = int(1.5*i)
 
         if epsilon < 0.1: epsilon = 0.1
-        stats = run_episode(env, agent, deterministic=False, do_training=True, rendering = True, skip_frames=5, max_timesteps=max_timesteps, history_length=history_length)
+        stats = run_episode(env, agent, deterministic=False, do_training=True, rendering = True, skip_frames=3, max_timesteps=max_timesteps, history_length=history_length)
         
         tensorboard.write_episode_data(i, eval_dict={ "episode_reward" : stats.episode_reward, 
                                                       "straight" : stats.get_action_usage(STRAIGHT),
@@ -138,7 +135,7 @@ def train_online(env, agent, num_episodes, history_length=0, model_dir="./models
                 best_eval_reward = avg_eval_reward
                 agent.save(os.path.join(model_dir, "dqn_agent_best.pt"))
                 print("Model saved")
-    agent.save(os.path.join(model_dir, "dqn_agent_final.pt"))
+        agent.save(os.path.join(model_dir, "dqn_agent_final.pt"))
 
     tensorboard.close_session()
 
@@ -162,12 +159,7 @@ if __name__ == "__main__":
     Q_network = CNN(history_length=history_length, n_classes=num_actions).cuda()
     Q_target = CNN(history_length=history_length, n_classes=num_actions).cuda()
 
-    summary(Q_network, (1, history_length, 96, 96), 
-            col_names = ["input_size",
-                        "output_size",
-                        "num_params",
-                        # "params_percent",
-                        "kernel_size",])
+    summary(Q_network, (history_length, 96, 96))
 
     agent = DQNAgent(Q = Q_network, Q_target=Q_target, num_actions=num_actions, 
                      device=device, lr=3e-4, history_length=history_length)

@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     agent = DQNAgent(Q = Q_network, Q_target=Q_target, num_actions=num_actions, 
                      device=device, history_length=history_length)
-    agent.load('./models_carracing/dqn_agent_best.pt')
+    agent.load('./models_carracing/dqn_agent_final.pt')
 
     n_test_episodes = 15
 
