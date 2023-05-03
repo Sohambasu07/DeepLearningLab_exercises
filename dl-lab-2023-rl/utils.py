@@ -56,6 +56,9 @@ def show_hist(Y, save):
     print(Y_dict)
     plt.bar(Y_dict.keys(), Y_dict.values(), color = 'g')
     plt.xticks([0, 1, 2, 3])
+    plt.xlabel("Action id")
+    plt.ylabel("Number of samples")
+    plt.title(save)
     plt.savefig(f'./figs/Histogram_{save}.png', transparent = False, facecolor = 'white')
     plt.show()
 

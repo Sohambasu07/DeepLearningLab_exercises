@@ -10,36 +10,6 @@ class CNN(nn.Module):
 
     def __init__(self, history_length=1, n_classes=4): 
         super(CNN, self).__init__()
-        # TODO : define layers of a convolutional neural network
-        # self.block1_conv1 = nn.Conv2d(in_channels=history_length, out_channels=32, kernel_size=3, stride=1, padding=1)
-        # self.block1_bn1 = nn.BatchNorm2d(num_features=32)
-        # self.block1_act1 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block1_conv2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3, stride=1, padding=1)
-        # self.block1_bn2 = nn.BatchNorm2d(num_features=64)
-        # self.block1_act2 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block1_pool = nn.MaxPool2d(kernel_size=(2))
-        
-        # self.block2_conv1 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
-        # self.block2_bn1 = nn.BatchNorm2d(num_features=64)
-        # self.block2_act1 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block2_conv2 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=1)
-        # self.block2_bn2 = nn.BatchNorm2d(num_features=128)
-        # self.block2_act2 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block2_pool = nn.AvgPool2d(kernel_size=(24)) #nn.MaxPool2d(kernel_size=(2))
-
-        # self.block3_conv1 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding='same')
-        # self.block3_bn1 = nn.BatchNorm2d(num_features=128)
-        # self.block3_act1 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block3_conv2 = nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, stride=1, padding='same')
-        # self.block3_bn2 = nn.BatchNorm2d(num_features=128)
-        # self.block3_act2 = nn.LeakyReLU(negative_slope=0.2)
-        # self.block3_pool = nn.AvgPool2d(kernel_size=(12))
-
-        # self.conv_layers = [
-        #     self.block1_conv1, self.block1_bn1, self.block1_act1, self.block1_conv2, self.block1_bn2, self.block1_act2, self.block1_pool,
-        #     self.block2_conv1, self.block2_bn1, self.block2_act1, self.block2_conv2, self.block2_bn2, self.block2_act2, self.block2_pool,
-        #     # self.block3_conv1, self.block3_bn1, self.block3_act1, self.block3_conv2, self.block3_bn2, self.block3_act2, self.block3_pool, 
-        # ]
 
         self.conv1 = nn.Conv2d(in_channels=history_length, out_channels=16, kernel_size=5, stride=2, padding=2)
         self.bn1 = nn.BatchNorm2d(num_features=16)
@@ -50,20 +20,14 @@ class CNN(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(num_features=32)
         self.act2 = nn.ReLU() #nn.LeakyReLU(negative_slope=0.2)
-        # self.cnn_drop2 = nn.Dropout(0.3)
+        self.cnn_drop2 = nn.Dropout(0.3)
         self.pool2 = nn.MaxPool2d(kernel_size=(2))
 
         self.conv3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, stride=2, padding=1)
         self.bn3 = nn.BatchNorm2d(num_features=64)
         self.act3 = nn.ReLU() #nn.LeakyReLU(negative_slope=0.2)
-        # self.cnn_drop3 = nn.Dropout(0.4)
+        self.cnn_drop3 = nn.Dropout(0.4)
         self.pool3 = nn.MaxPool2d(kernel_size=(2))
-
-        # self.conv4 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=2, padding=1)
-        # self.bn4 = nn.BatchNorm2d(num_features=128)
-        # self.act4 = nn.ReLU() #nn.LeakyReLU(negative_slope=0.2)
-        # # self.cnn_drop3 = nn.Dropout(0.4)
-        # self.pool4 = nn.MaxPool2d(kernel_size=(2))
 
 
 
@@ -83,16 +47,6 @@ class CNN(nn.Module):
 
     def forward(self, x):
         # TODO: compute forward pass
-        # inp = x
-        # count = 0
-        # for layer in self.conv_layers:
-        #     # if count!= 1 and count!= 4 and count!= 8 and count!= 11:
-        #     x = layer(x)
-        #     count += 1
-        #     if count == 1 or count == 8: # or count == 15:
-        #         inp = x
-        #     if count == 4 or count == 11: # or count == 18:
-        #        x = torch.cat((x, inp), dim=1)
 
 
 
@@ -105,20 +59,14 @@ class CNN(nn.Module):
         x = self.conv2(x)
         x = self.bn2(x)
         x = self.act2(x)
-        # x = self.cnn_drop2(x)
+        x = self.cnn_drop2(x)
         x = self.pool2(x)
 
         x = self.conv3(x)
         x = self.bn3(x)
         x = self.act3(x)
-        # x = self.cnn_drop3(x)
+        x = self.cnn_drop3(x)
         x = self.pool3(x)
-
-        # x = self.conv4(x)
-        # x = self.bn4(x)
-        # x = self.act4(x)
-        # # x = self.cnn_drop3(x)
-        # x = self.pool4(x)
 
 
         x = self.flatten(x)
@@ -129,6 +77,5 @@ class CNN(nn.Module):
         x = self.act_fc2(x)
         x = self.drop2(x)
         x = self.fc_out(x)
-        # x = self.output(x)
 
         return x

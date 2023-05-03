@@ -52,6 +52,11 @@ def run_episode(env, agent, deterministic, skip_frames=0,  do_training=True, ren
 
 
         # Hint: frame skipping might help you to get better results.
+        if not do_training:
+            if action_id == 2:
+                action_id = int(np.random.choice([0, 2], p= [0.10, 0.90]))
+            action = id_to_action(action_id)
+
         reward = 0
         for _ in range(skip_frames + 1):
             next_state, r, terminal, info = env.step(action)
@@ -98,12 +103,12 @@ def train_online(env, agent, num_episodes, history_length=0, model_dir="./models
 
         # Hint: you can keep the episodes short in the beginning by changing max_timesteps (otherwise the car will spend most of the time out of the track)
 
-        max_timesteps = 200
+        max_timesteps = 300
         epsilon = 1.0
 
-        if i > 200:
+        if i > 300:
             epsilon *= 0.995
-            max_timesteps = int(1.5*i)
+            max_timesteps = int(1.2*i)
 
         if epsilon < 0.1: epsilon = 0.1
         stats = run_episode(env, agent, deterministic=False, do_training=True, rendering = True, skip_frames=3, max_timesteps=max_timesteps, history_length=history_length)

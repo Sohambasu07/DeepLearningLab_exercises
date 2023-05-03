@@ -81,7 +81,7 @@ def train_online(env, agent, num_episodes=1000, model_dir="./models_cartpole", t
                 best_eval_reward = avg_eval_reward
                 agent.save(os.path.join(model_dir, "dqn_agent_best.pt"))
                 print("Model saved")
-    agent.save(os.path.join(model_dir, "dqn_agent_final.pt"))
+        agent.save(os.path.join(model_dir, "dqn_agent_final.pt"))
    
     tensorboard.close_session()
 

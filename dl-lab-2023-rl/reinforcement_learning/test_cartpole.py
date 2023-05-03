@@ -21,7 +21,7 @@ if __name__ == "__main__":
     Q_network = MLP(state_dim=4, action_dim=2).to(device)
     Q_target = MLP(state_dim=4, action_dim=2).to(device)
     agent = DQNAgent(Q_network, Q_target, num_actions=4, device=device)
-    agent.load('./models_cartpole/dqn_agent_best.pt')
+    agent.load('./models_cartpole/dqn_agent_final.pt')
  
     n_test_episodes = 15
 

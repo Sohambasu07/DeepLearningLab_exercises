@@ -21,7 +21,7 @@ class ReplayBuffer:
 
         # Replay Buffer capacity using FIFO
 
-        pop_pos = 0 # int(0.1*self.history_length)
+        pop_pos = int(0.1*self.history_length) #for CartPole to tackle Catastrophic forgetting
 
         if len(self._data.states) == self.history_length and self.history_length != 0:
             self._data.states.pop(pop_pos)

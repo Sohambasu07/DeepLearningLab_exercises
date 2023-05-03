@@ -36,14 +36,11 @@ def read_data(datasets_dir="./data", frac = 0.10):
     X = np.array(data["state"]).astype('float32')
     y = np.array(data["action"]).astype('float32')
 
-    # X = X[:25000]
-    # y = y[:25000]
-
-    show_hist([action_to_id(i) for i in y], 'Expert_Data')
+    show_hist([action_to_id(i) for i in y], 'Expert Data')
     
     # split data into training and validation set
-    n_samples = len(X) #len(data["state"])
-    print(X.shape, y.shape)
+    n_samples = len(X)
+    print("Total data shape: ", X.shape, y.shape)
 
     # train_samples = np.array(random.sample(list(np.arange(0, len(X), 1)), int((1-frac) * n_samples))) #np.random.randint(0, len(X), int((1-frac) * n_samples))
     # mask = np.ones(n_samples, int)
@@ -55,13 +52,17 @@ def read_data(datasets_dir="./data", frac = 0.10):
     # X_valid, y_valid = X[mask], y[mask]
 
     
-    X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
-    X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
+    # X_train, y_train = X[:int((1-frac) * n_samples)], y[:int((1-frac) * n_samples)]
+    # X_valid, y_valid = X[int((1-frac) * n_samples):], y[int((1-frac) * n_samples):]
+
+    
+    X_train, y_train = X[int(frac * n_samples):], y[int(frac * n_samples):]
+    X_valid, y_valid = X[:int(frac * n_samples)], y[:int(frac * n_samples)]
 
     values, count = np.unique(np.array([action_to_id(i) for i in y_valid]), return_counts = True)
     print(dict(zip(values, count)))
 
-    print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
+    print("Training and Validation states and actions shapes", X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
     return X_train, y_train, X_valid, y_valid
 
 
@@ -77,14 +78,23 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
     y_train = [action_to_id(i) for i in y_train]
     y_valid = [action_to_id(i) for i in y_valid]
 
-    show_hist(y_train, save = 'Before')
+    show_hist(y_train, save = 'Training Data Before Undersampling')
 
     X_train, y_train = balance_actions(X_train, y_train, drop = 0.7)
     print(X_train.shape, len(y_train))
 
-    show_hist(y_train, save = 'After')
+    show_hist(y_train, save = 'Training Data After Undersampling')
 
-    show_hist(y_valid, save = 'Validation')
+
+
+    show_hist(y_valid, save = 'Validation Data Before Undersampling')
+
+    X_valid, y_valid = balance_actions(X_valid, y_valid, drop = 0.7)
+    print(X_valid.shape, len(y_valid))
+
+    show_hist(y_valid, save = 'Validation Data After Undersampling')
+
+    # show_hist(y_valid, save = 'Validation Data')
 
     
 
@@ -95,7 +105,7 @@ def preprocessing(X_train, y_train, X_valid, y_valid, history_length=0):
     y_train = np.array(y_train[history_length - 1:])
     y_valid = np.array(y_valid[history_length - 1:])
 
-    print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
+    print("Training and Validation states and actions shapes after undersampling", X_train.shape, y_train.shape, X_valid.shape, y_valid.shape)
 
 
     # History:
@@ -186,7 +196,7 @@ def train_model(X_train, y_train, X_valid, y_valid, history_length, num_epochs, 
 
         if avg_val_acc > best_val_acc:
             best_val_acc = avg_val_acc
-            agent.save(os.path.join(model_dir, "agent.pt"))
+            agent.save(os.path.join(model_dir, "agent_best.pt"))
             print("Model saved in file: %s" % model_dir)
 
         agent.save(os.path.join(model_dir, "agent_final.pt"))
@@ -210,5 +220,5 @@ if __name__ == "__main__":
     X_train, y_train, X_valid, y_valid = preprocessing(X_train, y_train, X_valid, y_valid, history_length = hist_len)
 
     # train model (you can change the parameters!)
-    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 100, n_minibatches=1000, batch_size=80, lr=3e-4)
+    train_model(X_train, y_train, X_valid, y_valid, history_length = hist_len, num_epochs = 100, n_minibatches=1000, batch_size=128, lr=3e-4)
  

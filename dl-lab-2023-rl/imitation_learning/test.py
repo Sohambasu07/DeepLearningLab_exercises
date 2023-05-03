@@ -15,52 +15,16 @@ from agent.bc_agent import BCAgent
 from utils import *
 
 history_length = 1
-brake_step = 0
-
-state_hist = np.empty((history_length, 96, 96), dtype=np.int)
-state_count = 0
-
-act_hist = np.empty(100, dtype=np.int32)
-print(len(act_hist))
-act_hist.fill(-1)
-act_hist_len = len(act_hist)
-frz_count = 0
-frz_step = 0
-counter = 0
-
-def check_and_unfreeze(action):
-    global frz_count
-    for act in act_hist:
-        if np.all(act_hist == -1):
-            return True
-        if not np.all(act_hist == act):
-            return False
-        if np.all(act_hist == 3):
-            return False
-    frz_count += 1
-    print("Freeeeeeeeeeeeeeezeeeeeeeee!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ", frz_count)
-    return True
-
-def edit_state_hist(new_state):
-    global history_length
-    # global state_count
-    if history_length != 1:
-        # if state_count == history_length:
-        #     state_count = 0
-        i = history_length-1
-        for state in state_hist[-2::-1]:
-            # print(state.shape)
-            state_hist[i] = state
-            i -= 1
-        state_hist[0] = new_state
-
-
 
 
 def run_episode(env, agent, rendering=True, max_timesteps=1000):
+
+    
+    global history_length
     
     episode_reward = 0
     step = 0
+    state_hist = np.empty((history_length, 96, 96))
 
     state = env.reset()
     
@@ -73,27 +37,18 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
         #    state = ...
 
         state = rgb2gray(state)
-        state = np.expand_dims(state, (0, 1))
-        # state = np.repeat(state, history_length, axis = 1)
-        # global state_hist
-        # global history_length
-        # if step == 0:
-        #     state_hist = np.repeat(np.expand_dims(state, 0), history_length, axis = 0)
-        # else:
-        #     edit_state_hist(state)
-        # state = np.expand_dims(state_hist, (0))
+        
+        state = np.expand_dims(state, 0)
+        if step == 0:
+            state_hist = np.repeat(state, history_length, axis = 0)
+        else:
+            state_hist = np.vstack((state_hist, state))
+            state_hist = np.delete(state_hist, 0, axis=0)
 
-        # if step>=100:
-        #     plt.imshow(np.swapaxes(state[:, 0], 0, -1))
-        #     plt.show()
-        #     plt.imshow(np.swapaxes(state[:, 1], 0, -1))
-        #     plt.show()
-        #     plt.imshow(np.swapaxes(state[:, 2], 0, -1))
-        #     plt.show()
-        #     exit()
+        state = np.expand_dims(state_hist, 0)
 
-        # print(state_hist.shape)
-        # print(state.shape)
+        print("Step: ", step)
+        # print("Shape of state hist: ", np.shape(state_hist))
 
         # TODO: get the action from your agent! You need to transform the discretized actions to continuous
         # actions.
@@ -105,38 +60,18 @@ def run_episode(env, agent, rendering=True, max_timesteps=1000):
 
 
         act = F.softmax(agent.predict(state))
-        print(torch.argmax(act))
         act = torch.argmax(act).item()
-        # a = id_to_action(act)
-
-        global counter
-        global frz_step
-        global brake_step
-
-        if counter == act_hist_len:
-            counter = 0
-        if check_and_unfreeze(act):
-            frz_step = step
-        print(act)
-
-        act_hist[counter] = act
-        counter += 1
+        a = id_to_action(act)
+        print("Action ID: ",act)
 
 
         if act == 0:
-            act = int(np.random.choice([0, 3], p= [0.4, 0.60]))
+            act = int(np.random.choice([0, 3], p= [0.4, 0.6]))
         a = id_to_action(act)
 
-        unique, counts = np.unique(act_hist, return_counts = True)
-        print(dict(zip(unique, counts)))
 
         if step<=40:
             a = np.array([0.0, 1.0, 0.0])
-
-        # if step>=20 and step<=50: #and  np.all(act_hist[:30] == 3):
-        #     a = np.array([0.0, 0.0, 0.0])
-
-        # if step<=(frz_step+5):a = np.array([0.0, 1.0, 0.0])
 
         next_state, r, done, info = env.step(a)   
         episode_reward += r       
