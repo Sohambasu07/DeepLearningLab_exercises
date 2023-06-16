@@ -1,0 +1,4 @@
+linear: 			 45.48
+convolutional:		 45.40
+Transformer:		 
+Transformer (shared QK): 
